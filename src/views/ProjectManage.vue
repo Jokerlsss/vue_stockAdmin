@@ -18,10 +18,19 @@
     >
       <!--//? 如果入库单可以修改，假设我入库后，进行出库，出库之后修改入库日期到出库时间之后，该怎么算？-->
 
+      <!-- productCode: null,
+        productName: null,
+        riskType: null,
+        publisher: null,
+        dateOfEstablishment: null,
+      productType: null-->
       <vxe-table-column type="seq" width="60"></vxe-table-column>
-      <vxe-table-column field="stockInNum" title="入库单号" sortable type="html"></vxe-table-column>
-      <vxe-table-column field="stockInDate" title="入库日期" sortable type="html"></vxe-table-column>
-      <vxe-table-column field="remark" title="备注" show-overflow type="html"></vxe-table-column>
+      <vxe-table-column field="productName" title="产品名称" type="html"></vxe-table-column>
+      <vxe-table-column field="productCode" title="产品代码" type="html"></vxe-table-column>
+      <vxe-table-column field="riskType" title="风险类型" type="html"></vxe-table-column>
+      <vxe-table-column field="publisher" title="发布公司" type="html"></vxe-table-column>
+      <vxe-table-column field="dateOfEstablishment" title="发布日期" sortable type="html"></vxe-table-column>
+      <vxe-table-column field="productType" title="产品类型" show-overflow type="html"></vxe-table-column>
       <vxe-table-column title="操作" width="100" show-overflow>
         <template v-slot="{ row }">
           <el-button type="text" icon="el-icon-edit" @click="editEvent(row)" style="color:#25c386"></el-button>
@@ -40,7 +49,6 @@
       </template>
     </vxe-table>
     <!-- 分页 -->
-    <!--// TODO: 分页数据获取-->
     <vxe-pager
       :current-page="tablePage.currentPage"
       :page-size="tablePage.pageSize"
@@ -49,7 +57,6 @@
       @page-change="handlePageChange"
     ></vxe-pager>
     <!-- 编辑 & 新增 弹窗 -->
-    <!-- // TODO: 当子表格新增空行时，不予保存-->
     <vxe-modal
       v-model="showEdit"
       :title="selectRow ? '编辑' : '新增'"
@@ -74,70 +81,51 @@
           title-width="200px"
           :title-prefix="{icon: 'fa fa-address-card-o'}"
         ></vxe-form-item>
-        <!-- // TODO:入库单号使用时间戳+当天流水号（后端） -->
         <vxe-form-item
-          title="入库单号"
-          field="stockInNum"
-          span="12"
+          title="产品名称"
+          field="productName"
+          span="23"
           :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
         ></vxe-form-item>
+        <!-- // TODO: 产品代码设置为只能输入数字，包括表结构 -->
         <vxe-form-item
-          title="入库日期"
-          field="stockInDate"
+          title="产品代码"
+          field="productCode"
+          span="7"
+          :item-render="{name: '$input', props: {}}"
+        ></vxe-form-item>
+        <!-- 股票、基金、定期、黄金 -->
+        <vxe-form-item
+          title="产品类型"
+          field="productType"
+          span="8"
+          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股',label:'股票'},{value:'基',label:'基金'},{value:'定',label:'定期'},{value:'黄',label:'黄金'}]}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="风险类型"
+          field="riskType"
+          span="8"
+          :item-render="{name: '$select', props: {placeholder: '请选择风险类型'},options:[{value:'低',label:'低风险'},{value:'中低',label:'中低风险'},{value:'中',label:'中风险'},{value:'中高',label:'中高风险'}]}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="发行公司"
+          field="publisher"
+          span="12"
+          :item-render="{name: '$input', props: {placeholder: '请输入发行公司名称'}}"
+        ></vxe-form-item>
+        <!-- // TODO:日期默认录入当天 -->
+        <vxe-form-item
+          title="发行日期"
+          field="dateOfEstablishment"
           span="11"
           :item-render="{name: '$input', props: {type: 'date', placeholder: '请选择日期',readonly:'true'}}"
         ></vxe-form-item>
-        <vxe-form-item
-          title="备注"
-          field="remark"
-          span="23"
-          :item-render="{name: 'textarea', attrs: {placeholder: '请输入备注'}}"
-        ></vxe-form-item>
-        <!-- 填写入库单-入库产品详情信息 -->
-        <vxe-form-item
-          title="入库产品信息"
-          span="24"
-          title-align="left"
-          title-width="200px"
-          :title-prefix="{message: '请填写必填项', icon: 'fa fa-info-circle'}"
-        ></vxe-form-item>
-        <vxe-toolbar>
-          <template v-slot:buttons>
-            <el-button icon="el-icon-plus" @click="insertRow()" class="greenBtn"></el-button>
-            <!-- <el-button @click="insertRow(-1)">在最后行插入</el-button> -->
-            <el-button
-              @click="$refs.xTable.removeCheckboxRow()"
-              icon="el-icon-delete"
-              class="dangerBtn"
-            ></el-button>
-          </template>
-        </vxe-toolbar>
-        <!-- // TODO: 新增空值不能提交 -->
-        <vxe-table
-          border
-          show-overflow
-          ref="xTable"
-          class="my_table_insert"
-          max-height="200"
-          :data="tableProductData"
-          :edit-config="{trigger: 'click', mode: 'cell', icon: 'fa fa-pencil'}"
-        >
-          // TODO: 输入校验
-          <vxe-table-column type="checkbox" width="60"></vxe-table-column>
-          <vxe-table-column type="seq" width="60"></vxe-table-column>
-          <vxe-table-column field="productName" title="产品名称" :edit-render="{name: 'input'}"></vxe-table-column>
-          <vxe-table-column field="productSize" title="产品规格" :edit-render="{name: 'input'}"></vxe-table-column>
-          <vxe-table-column
-            field="amount"
-            title="数量"
-            :edit-render="{name: 'input',attrs: { type:'number'}}"
-          ></vxe-table-column>
-        </vxe-table>
-        <vxe-form-item
+        <el-button type="primary" @click="insertFinancialProduct">确定提交</el-button>
+        <!-- <vxe-form-item
           align="center"
           span="24"
           :item-render="{ name: '$buttons', children: [{ props: { type: 'submit', content: '提交', status: 'primary' } }, { props: { type: 'reset', content: '重置' } }] }"
-        ></vxe-form-item>
+        ></vxe-form-item>-->
       </vxe-form>
     </vxe-modal>
   </div>
@@ -160,19 +148,25 @@ export default {
       selectRow: null,
       showEdit: false,
       formData: {
-        stockInNum: null,
-        stockInDate: null,
-        remark: null
-      },
-      formRules: {
-        stockInNum: [
-          { required: true, message: '请输入名称' },
-          { min: 3, max: 5, message: '长度在 3 到 5 个字符' }
-        ],
-        stockInDate: [
-          { required: true, message: '请输入日期' }
-        ]
+        productCode: null,
+        productName: null,
+        riskType: null,
+        publisher: null,
+        dateOfEstablishment: null,
+        productType: null
       }
+
+      // 制定输入规则
+
+      // formRules: {
+      //   productType: [
+      //     { required: true, message: '请输入名称' },
+      //     { min: 3, max: 5, message: '长度在 3 到 5 个字符' }
+      //   ],
+      //   stockInDate: [
+      //     { required: true, message: '请输入日期' }
+      //   ]
+      // }
     }
   },
   // 全表搜索
@@ -185,15 +179,33 @@ export default {
     this.getTableBaseData()
   },
   methods: {
+    // 新增数据
+    insertFinancialProduct () {
+      console.log('productCode:', this.productCode)
+      this.$http({
+        method: 'post',
+        url: `http://127.0.0.1:9090/financialProduct/insert`,
+        data: this.formData,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((res) => {
+        console.log('post:', res)
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
+    },
+    // 改变页面
     handlePageChange ({ currentPage, pageSize }) {
       this.tablePage.currentPage = currentPage
       this.tablePage.pageSize = pageSize
       this.getTableBaseData()
     },
+    // 获取数据
     getTableBaseData () {
       this.$http({
         method: 'get',
-        url: `http://localhost:9090/StockIn/page`,
+        url: `http://localhost:9090/financialProduct/listPage`,
         params: {
           current: this.tablePage.currentPage,
           size: this.tablePage.pageSize
@@ -247,9 +259,12 @@ export default {
     },
     insertStockIn () {
       this.formData = {
-        stockInNum: '',
-        stockInDate: '',
-        remark: ''
+        productCode: '',
+        productName: '',
+        riskType: '',
+        publisher: '',
+        dateOfEstablishment: '',
+        productType: ''
       }
       this.tableProductData = {
         productName: '',
@@ -263,9 +278,12 @@ export default {
     editEvent (row) {
       this.mockTableProductData()
       this.formData = {
-        stockInNum: row.stockInNum,
-        stockInDate: row.stockInDate,
-        remark: row.remark
+        productCode: row.productCode,
+        productName: row.productName,
+        riskType: row.riskType,
+        publisher: row.publisher,
+        dateOfEstablishment: row.dateOfEstablishment,
+        productType: row.productType
       }
       this.selectRow = row
       this.showEdit = true
@@ -277,7 +295,6 @@ export default {
         }
       })
     },
-    // TODO: 在新增后，分成两个 post 请求去保存
     submitEvent () {
       this.submitLoading = true
       setTimeout(() => {

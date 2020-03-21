@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 // import vBreadCrumb from '@/components/v-BreadCrumb'
-import StockIn from '@/views/StockIn'
+import ProjectManage from '@/views/ProjectManage'
 import Inventory from '@/views/Inventory'
 import StockOut from '@/views/StockOut'
 
@@ -12,13 +12,13 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'StockIn',
-      component: StockIn
+      name: 'ProjectManage',
+      component: ProjectManage
     },
     {
       path: '/1',
-      name: 'StockIn',
-      component: StockIn
+      name: 'ProjectManage',
+      component: ProjectManage
     },
     {
       path: '/2',

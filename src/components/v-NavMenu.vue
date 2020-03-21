@@ -12,16 +12,16 @@
   >
     <el-menu-item index="1">
       <i class="el-icon-setting"></i>
-      <span slot="title">入库</span>
+      <span slot="title">资产管理</span>
     </el-menu-item>
-    <el-menu-item index="2">
+    <!-- <el-menu-item index="2">
       <i class="el-icon-setting"></i>
       <span slot="title">库存</span>
     </el-menu-item>
     <el-menu-item index="3">
       <i class="el-icon-setting"></i>
       <span slot="title">出库</span>
-    </el-menu-item>
+    </el-menu-item>-->
   </el-menu>
 </template>
 

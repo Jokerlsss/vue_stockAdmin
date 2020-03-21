@@ -1,7 +1,7 @@
 {
-  "name": "warehouse",
+  "name": "adminmanager",
   "version": "1.0.0",
-  "description": "A Vue.project about ware house manager",
+  "description": "A Vue.project about admin manager",
   "author": "Jokerls <1152501640@qq.com>",
   "private": true,
   "scripts": {

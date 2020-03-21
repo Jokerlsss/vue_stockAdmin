@@ -4,7 +4,7 @@
     <el-breadcrumb-item>
       <a href="/">入库</a>
     </el-breadcrumb-item>-->
-    <el-breadcrumb-item>仓库管理</el-breadcrumb-item>
+    <el-breadcrumb-item>后台管理</el-breadcrumb-item>
     <!-- <el-breadcrumb-item>入库</el-breadcrumb-item> -->
     <el-breadcrumb-item>{{currentPage}}</el-breadcrumb-item>
     <!-- <el-breadcrumb-item>活动详情</el-breadcrumb-item> -->

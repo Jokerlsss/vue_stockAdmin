@@ -12,11 +12,11 @@ export default new Vuex.Store({
     mutations: {
         // 项目页面-切换成列表形式
         cutPage: (state, page) => {
-            var stockIn = 1
+            var ProjectManage = 1
             var inventory = 2
             var stockOut = 3
-            if (page === stockIn) {
-                state.currentPage = '入库单汇总'
+            if (page === ProjectManage) {
+                state.currentPage = '资产管理'
             } else if (page === inventory) {
                 state.currentPage = '库存'
             } else if (page === stockOut) {
