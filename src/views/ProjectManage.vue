@@ -16,20 +16,13 @@
       align="center"
       stripe
     >
-      <!--//? 如果入库单可以修改，假设我入库后，进行出库，出库之后修改入库日期到出库时间之后，该怎么算？-->
-
-      <!-- productCode: null,
-        productName: null,
-        riskType: null,
-        publisher: null,
-        dateOfEstablishment: null,
-      productType: null-->
+      <!-- // TODO: 新增的项目排在最前面 -->
       <vxe-table-column type="seq" width="60"></vxe-table-column>
       <vxe-table-column field="productName" title="产品名称" type="html"></vxe-table-column>
       <vxe-table-column field="productCode" title="产品代码" type="html"></vxe-table-column>
       <vxe-table-column field="riskType" title="风险类型" type="html"></vxe-table-column>
       <vxe-table-column field="publisher" title="发布公司" type="html"></vxe-table-column>
-      <vxe-table-column field="dateOfEstablishment" title="发布日期" sortable type="html"></vxe-table-column>
+      <vxe-table-column field="dateOfEstablishment" title="发布日期" type="html"></vxe-table-column>
       <vxe-table-column field="productType" title="产品类型" show-overflow type="html"></vxe-table-column>
       <vxe-table-column title="操作" width="100" show-overflow>
         <template v-slot="{ row }">
@@ -99,13 +92,13 @@
           title="产品类型"
           field="productType"
           span="8"
-          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股',label:'股票'},{value:'基',label:'基金'},{value:'定',label:'定期'},{value:'黄',label:'黄金'}]}"
+          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股票',label:'股票'},{value:'基金',label:'基金'},{value:'定期',label:'定期'},{value:'黄金',label:'黄金'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="风险类型"
           field="riskType"
           span="8"
-          :item-render="{name: '$select', props: {placeholder: '请选择风险类型'},options:[{value:'低',label:'低风险'},{value:'中低',label:'中低风险'},{value:'中',label:'中风险'},{value:'中高',label:'中高风险'}]}"
+          :item-render="{name: '$select', props: {placeholder: '请选择风险类型'},options:[{value:'低风险',label:'低风险'},{value:'中低风险',label:'中低风险'},{value:'中风险',label:'中风险'},{value:'中高风险',label:'中高风险'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="发行公司"
@@ -120,12 +113,130 @@
           span="11"
           :item-render="{name: '$input', props: {type: 'date', placeholder: '请选择日期',readonly:'true'}}"
         ></vxe-form-item>
-        <el-button type="primary" @click="insertFinancialProduct">确定提交</el-button>
-        <!-- <vxe-form-item
-          align="center"
+      </vxe-form>
+      <!-- 详细信息：基金 -->
+      <vxe-form
+        :data="fundData"
+        :rules="formRules"
+        title-align="right"
+        title-width="100"
+        @submit="submitEvent"
+        v-if="isFund"
+      >
+        <!-- // TODO: 在选择完类型之后出现详细信息的输入框 -->
+        <vxe-form-item
+          title="基金详细信息"
           span="24"
-          :item-render="{ name: '$buttons', children: [{ props: { type: 'submit', content: '提交', status: 'primary' } }, { props: { type: 'reset', content: '重置' } }] }"
-        ></vxe-form-item>-->
+          title-align="left"
+          title-width="200px"
+          :title-prefix="{icon: 'fa fa-address-card-o'}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="基金类型"
+          field="fundType"
+          span="12"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="基金经理"
+          field="fundManager"
+          span="11"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="资产规模"
+          field="assetSize"
+          span="12"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="发行价格"
+          field="issuePrice"
+          span="11"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+      </vxe-form>
+      <!-- 详细信息：股票 -->
+      <vxe-form
+        :data="stockData"
+        :rules="formRules"
+        title-align="right"
+        title-width="100"
+        @submit="submitEvent"
+        v-if="isStock"
+      >
+        <vxe-form-item
+          title="股票详细信息"
+          span="24"
+          title-align="left"
+          title-width="200px"
+          :title-prefix="{icon: 'fa fa-address-card-o'}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="发行价格"
+          field="issuePrice"
+          span="11"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+      </vxe-form>
+      <!-- 详细信息：定期 -->
+      <vxe-form
+        :data="regularData"
+        :rules="formRules"
+        title-align="right"
+        title-width="100"
+        @submit="submitEvent"
+        v-if="isRegular"
+      >
+        <vxe-form-item
+          title="定期详细信息"
+          span="24"
+          title-align="left"
+          title-width="200px"
+          :title-prefix="{icon: 'fa fa-address-card-o'}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="存款时长"
+          field="depositDuration"
+          span="12"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="利率"
+          field="interestRate"
+          span="11"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+      </vxe-form>
+      <!-- 详细信息：黄金 -->
+      <vxe-form
+        :data="goldData"
+        :rules="formRules"
+        title-align="right"
+        title-width="100"
+        @submit="submitEvent"
+        v-if="isGold"
+      >
+        <vxe-form-item
+          title="黄金详细信息"
+          span="24"
+          title-align="left"
+          title-width="200px"
+          :title-prefix="{icon: 'fa fa-address-card-o'}"
+        ></vxe-form-item>
+        <vxe-form-item
+          title="发行价格"
+          field="issuePrice"
+          span="11"
+          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+        ></vxe-form-item>
+      </vxe-form>
+      <!-- 存放按钮的区域 -->
+      <vxe-form :data="formData">
+        <vxe-form-item align="center" span="24">
+          <el-button type="primary" @click="submitEvent">提交</el-button>
+          <el-button>取消</el-button>
+        </vxe-form-item>
       </vxe-form>
     </vxe-modal>
   </div>
@@ -135,6 +246,36 @@
 // import XEUtils from 'xe-utils'
 import globalStore from '../stores/global-stores'
 export default {
+  computed: {
+    isGold () {
+      if (this.formData.productType === '黄金') {
+        return true
+      } else {
+        return false
+      }
+    },
+    isFund () {
+      if (this.formData.productType === '基金') {
+        return true
+      } else {
+        return false
+      }
+    },
+    isStock () {
+      if (this.formData.productType === '股票') {
+        return true
+      } else {
+        return false
+      }
+    },
+    isRegular () {
+      if (this.formData.productType === '定期') {
+        return true
+      } else {
+        return false
+      }
+    }
+  },
   data () {
     return {
       submitLoading: false,
@@ -179,9 +320,22 @@ export default {
     this.getTableBaseData()
   },
   methods: {
+    updateFinancialProduct () {
+      this.$http({
+        method: 'post',
+        url: `http://127.0.0.1:9090/financialProduct/updateByWrapper`,
+        data: this.formData,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((res) => {
+        console.log('post:', res)
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
+    },
     // 新增数据
     insertFinancialProduct () {
-      console.log('productCode:', this.productCode)
       this.$http({
         method: 'post',
         url: `http://127.0.0.1:9090/financialProduct/insert`,
@@ -302,10 +456,12 @@ export default {
         this.showEdit = false
         if (this.selectRow) {
           this.$XModal.message({ message: '保存成功', status: 'success' })
-          Object.assign(this.selectRow, this.formData)
+          this.updateFinancialProduct()
+          this.getTableBaseData()
         } else {
           this.$XModal.message({ message: '新增成功', status: 'success' })
-          this.$refs.xTable.insert(this.formData)
+          this.insertFinancialProduct()
+          this.getTableBaseData()
         }
       }, 500)
     },
