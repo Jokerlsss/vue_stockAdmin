@@ -114,6 +114,7 @@
           :item-render="{name: '$input', props: {type: 'date', placeholder: '请选择日期',readonly:'true'}}"
         ></vxe-form-item>
       </vxe-form>
+      <!-- // TODO: 增加productCode但不显示，用于传递给后端 -->
       <!-- 详细信息：基金 -->
       <vxe-form
         :data="fundData"
@@ -135,25 +136,26 @@
           title="基金类型"
           field="fundType"
           span="12"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$select', props: {placeholder: '请选择基金类型'},options:[{value:'混合型',label:'混合型'},{value:'股票型',label:'股票型'},{value:'债券型',label:'债券型'},{value:'QDII',label:'QDII'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="基金经理"
           field="fundManager"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {placeholder: '请输入经理名称'}}"
         ></vxe-form-item>
+        <!-- // TODO: 数字 + 单位 输入框 -->
         <vxe-form-item
           title="资产规模"
           field="assetSize"
           span="12"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {placeholder: '请输入规模，如：2亿'}}"
         ></vxe-form-item>
         <vxe-form-item
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 详细信息：股票 -->
@@ -176,7 +178,7 @@
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 详细信息：定期 -->
@@ -199,14 +201,14 @@
           title="存款时长"
           field="depositDuration"
           span="12"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
-        ></vxe-form-item>
+          :item-render="{name: '$input', props: {type:'number',placeholder: '请输入时长，如：180'}}"
+        ></vxe-form-item>天
         <vxe-form-item
           title="利率"
           field="interestRate"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
-        ></vxe-form-item>
+          :item-render="{name: '$input', props: {type:'number',placeholder: '请输入利率，如：1.2'}}"
+        ></vxe-form-item>%
       </vxe-form>
       <!-- 详细信息：黄金 -->
       <vxe-form
@@ -228,11 +230,11 @@
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 存放按钮的区域 -->
-      <vxe-form :data="formData">
+      <vxe-form>
         <vxe-form-item align="center" span="24">
           <el-button type="primary" @click="submitEvent">提交</el-button>
           <el-button>取消</el-button>
@@ -274,6 +276,37 @@ export default {
       } else {
         return false
       }
+    },
+    insertDetailInfoURL () {
+      if (this.isGold) {
+        let url = 'http://127.0.0.1:9090/gold/insert'
+        return url
+      } else if (this.isFund) {
+        let url = 'http://127.0.0.1:9090/fund/insert'
+        return url
+      } else if (this.isStock) {
+        let url = 'http://127.0.0.1:9090/stock/insert'
+        return url
+      } else if (this.isRegular) {
+        let url = 'http://127.0.0.1:9090/regular/insert'
+        return url
+      }
+    },
+    // 判断详细信息是什么类型
+    insertDetailInfo () {
+      if (this.isGold) {
+        let data = this.goldData
+        return data
+      } else if (this.isFund) {
+        let data = this.fundData
+        return data
+      } else if (this.isStock) {
+        let data = this.stockData
+        return data
+      } else if (this.isRegular) {
+        let data = this.regularData
+        return data
+      }
     }
   },
   data () {
@@ -286,6 +319,28 @@ export default {
         pageSize: 5,
         totalResult: 0
       },
+      // 基金详细信息数组
+      fundData: {
+        productCode: null,
+        fundType: null,
+        fundManager: null,
+        assetSize: null,
+        issuePrice: null
+      },
+      // 黄金详细信息
+      goldData: {
+        issuePrice: null
+      },
+      // 定期详细信息
+      regularData: {
+        depositDuration: null,
+        interestRate: null
+      },
+      // 股票详细信息
+      stockData: {
+        issuePrice: null
+      },
+
       selectRow: null,
       showEdit: false,
       formData: {
@@ -320,6 +375,24 @@ export default {
     this.getTableBaseData()
   },
   methods: {
+    // 增加项目详细信息
+    insertProductDetailInfo () {
+      // 将项目代码添加到详细信息数组中
+      var productCode = this.formData.productCode
+      this.$set(this.insertDetailInfo, 'productCode', productCode)
+      this.$http({
+        method: 'post',
+        url: this.insertDetailInfoURL,
+        data: this.insertDetailInfo,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((res) => {
+        console.log('post:', res)
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
+    },
     updateFinancialProduct () {
       this.$http({
         method: 'post',
@@ -365,9 +438,7 @@ export default {
           size: this.tablePage.pageSize
         }
       }).then((res) => {
-        console.log('getRes:', res)
         this.tableBaseData = res.data.records
-        console.log(this.tableBaseData)
         this.tablePage.totalResult = res.data.total
       }).catch(function (err) {
         console.log('err:', err)
@@ -408,10 +479,13 @@ export default {
     visibleMethod ({ data }) {
       return data.flag1 === 'Y'
     },
+    // 行点击事件
     cellDBLClickEvent ({ row }) {
+      // TODO: 点击时发起请求查询详细信息
       this.editEvent(row)
     },
     insertStockIn () {
+      // 表格基础信息
       this.formData = {
         productCode: '',
         productName: '',
@@ -420,10 +494,26 @@ export default {
         dateOfEstablishment: '',
         productType: ''
       }
-      this.tableProductData = {
-        productName: '',
-        productSize: '',
-        amount: ''
+      // 基金详细信息
+      this.fundData = {
+        productCode: '',
+        fundType: '',
+        fundManager: '',
+        assetSize: '',
+        issuePrice: ''
+      }
+      // 黄金详细信息
+      this.goldData = {
+        issuePrice: ''
+      }
+      // 定期详细信息
+      this.regularData = {
+        depositDuration: '',
+        interestRate: ''
+      }
+      // 股票详细信息
+      this.stockData = {
+        issuePrice: ''
       }
       this.selectRow = null
       this.showEdit = true
@@ -438,6 +528,27 @@ export default {
         publisher: row.publisher,
         dateOfEstablishment: row.dateOfEstablishment,
         productType: row.productType
+      }
+      // 基金详细信息
+      this.fundData = {
+        productCode: row.productCode,
+        fundType: row.fundType,
+        fundManager: row.fundManager,
+        assetSize: row.assetSize,
+        issuePrice: row.issuePrice
+      }
+      // 黄金详细信息
+      this.goldData = {
+        issuePrice: row.issuePrice
+      }
+      // 定期详细信息
+      this.regularData = {
+        depositDuration: row.depositDuration,
+        interestRate: row.interestRate
+      }
+      // 股票详细信息
+      this.stockData = {
+        issuePrice: row.issuePrice
       }
       this.selectRow = row
       this.showEdit = true
@@ -462,6 +573,7 @@ export default {
           this.$XModal.message({ message: '新增成功', status: 'success' })
           this.insertFinancialProduct()
           this.getTableBaseData()
+          this.insertProductDetailInfo()
         }
       }, 500)
     },
