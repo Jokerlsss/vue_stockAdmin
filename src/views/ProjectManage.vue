@@ -4,7 +4,7 @@
     <div class="oprateArea">
       <el-button @click="insertStockIn()" class="greenBtn">新增</el-button>
     </div>
-    <!-- 入库单信息汇总 -->
+    <!-- 资产项目信息汇总 -->
     <vxe-table
       border
       row-key
@@ -92,7 +92,7 @@
           title="产品类型"
           field="productType"
           span="8"
-          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股票',label:'股票'},{value:'基金',label:'基金'},{value:'定期',label:'定期'},{value:'黄金',label:'黄金'}]}"
+          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股票',label:'股票'},{value:'基金',label:'基金'},{value:'黄金',label:'黄金'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="风险类型"
@@ -118,7 +118,7 @@
       <!-- 详细信息：基金 -->
       <vxe-form
         :data="fundData"
-        :rules="formRules"
+        :rules="fundRules"
         title-align="right"
         title-width="100"
         @submit="submitEvent"
@@ -161,7 +161,7 @@
       <!-- 详细信息：股票 -->
       <vxe-form
         :data="stockData"
-        :rules="formRules"
+        :rules="stockRules"
         title-align="right"
         title-width="100"
         @submit="submitEvent"
@@ -181,7 +181,7 @@
           :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
-      <!-- 详细信息：定期 -->
+      <!-- 详细信息：定期
       <vxe-form
         :data="regularData"
         :rules="formRules"
@@ -209,11 +209,12 @@
           span="11"
           :item-render="{name: '$input', props: {type:'number',placeholder: '请输入利率，如：1.2'}}"
         ></vxe-form-item>%
-      </vxe-form>
+      </vxe-form>-->
+
       <!-- 详细信息：黄金 -->
       <vxe-form
         :data="goldData"
-        :rules="formRules"
+        :rules="goldRules"
         title-align="right"
         title-width="100"
         @submit="submitEvent"
@@ -350,7 +351,7 @@ export default {
         publisher: null,
         dateOfEstablishment: null,
         productType: null
-      }
+      },
 
       // 制定输入规则
 
@@ -363,6 +364,50 @@ export default {
       //     { required: true, message: '请输入日期' }
       //   ]
       // }
+      formRules: {
+        productName: [
+          { require: true, message: '请输入产品名称' }
+        ],
+        productCode: [
+          { require: true, message: '请输入产品代码' }
+        ],
+        productType: [
+          { require: true, message: '请选择产品类型' }
+        ],
+        riskType: [
+          { require: true, message: '请选择风险类型' }
+        ],
+        publisher: [
+          { require: true, message: '请输入发行公司' }
+        ],
+        dateOfEstablishment: [
+          { require: true, message: '请输入发行日期' }
+        ]
+      },
+      fundRules: {
+        fundType: [
+          { require: true, message: '请选择基金类型' }
+        ],
+        fundManager: [
+          { require: true, message: '请输入基金经理' }
+        ],
+        assetSize: [
+          { require: true, message: '请输入资产规模' }
+        ],
+        issuePrice: [
+          { require: true, message: '请输入发行价格' }
+        ]
+      },
+      stockRules: {
+        issuePrice: [
+          { require: true, message: '请输入发行价格' }
+        ]
+      },
+      goldRules: {
+        issuePrice: [
+          { require: true, message: '请输入发行价格' }
+        ]
+      }
     }
   },
   // 全表搜索
@@ -375,6 +420,16 @@ export default {
     this.getTableBaseData()
   },
   methods: {
+    // 时间戳转换为标准格式时间
+    timestampToTime (timestamp) {
+      // 时间戳为10位需*1000，时间戳为13位的话不需乘1000
+      var date = new Date(timestamp)
+      var Y = date.getFullYear() + '-'
+      // 0 代表 1月份，因此要加 1
+      var M = (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-'
+      var D = date.getDate() + ' '
+      return Y + M + D
+    },
     // 增加项目详细信息
     insertProductDetailInfo () {
       // 将项目代码添加到详细信息数组中
@@ -530,6 +585,7 @@ export default {
         productType: row.productType
       }
       // 基金详细信息
+      // TODO： 详细信息绑定上表单中
       this.fundData = {
         productCode: row.productCode,
         fundType: row.fundType,
@@ -560,22 +616,79 @@ export default {
         }
       })
     },
-    submitEvent () {
-      this.submitLoading = true
-      setTimeout(() => {
-        this.submitLoading = false
-        this.showEdit = false
-        if (this.selectRow) {
-          this.$XModal.message({ message: '保存成功', status: 'success' })
-          this.updateFinancialProduct()
-          this.getTableBaseData()
-        } else {
-          this.$XModal.message({ message: '新增成功', status: 'success' })
-          this.insertFinancialProduct()
-          this.getTableBaseData()
-          this.insertProductDetailInfo()
+    // 份额数字校验
+    numberCheck (param) {
+      // 校验规则：非零的正整数
+      var reg = /^[1-9]\d*$/
+      if (!reg.test(param)) {
+        return false
+      } else {
+        return true
+      }
+    },
+    // 判空校验
+    isNull () {
+      if (this.formData.productType === null) {
+        return false
+      } else if (this.formData.productName === null || this.formData.productCode === null || this.formData.riskType === null || this.formData.publisher === null || this.formData.productName === null || this.formData.dateOfEstablishment === null) {
+        return false
+      } else {
+        if (this.formData.productType === '股票') {
+          if (this.stockData.issuePrice === null) {
+            return false
+          } else {
+            // 数字校验
+            if (this.numberCheck(this.stockData.issuePrice) && this.numberCheck(this.formData.productCode)) {
+              return true
+            } else {
+              return false
+            }
+          }
+        } else if (this.formData.productType === '基金') {
+          if (this.fundData.issuePrice === null || this.fundData.fundManager === null || this.fundData.assetSize === null) {
+            return false
+          } else {
+            if (this.numberCheck(this.fundData.issuePrice) && this.numberCheck(this.formData.productCode)) {
+              return true
+            } else {
+              return false
+            }
+          }
+        } else if (this.formData.productType === '黄金') {
+          if (this.goldData.issuePrice === null) {
+            return false
+          } else {
+            if (this.numberCheck(this.goldData.issuePrice) && this.numberCheck(this.formData.productCode)) {
+              return true
+            } else {
+              return false
+            }
+          }
         }
-      }, 500)
+      }
+    },
+    submitEvent () {
+      const isNull = this.isNull()
+      if (isNull) {
+        this.submitLoading = true
+        setTimeout(() => {
+          this.submitLoading = false
+          this.showEdit = false
+          if (this.selectRow) {
+            this.$XModal.message({ message: '保存成功', status: 'success' })
+            this.updateFinancialProduct()
+            this.getTableBaseData()
+          } else {
+            this.$XModal.message({ message: '新增成功', status: 'success' })
+            this.insertProductDetailInfo()
+            this.insertFinancialProduct()
+            // TODO: 在新增后有时候不会刷新当前页面
+            this.getTableBaseData()
+          }
+        }, 500)
+      } else {
+        this.$XModal.message({ message: '信息不完整或格式有误', status: 'fail' })
+      }
     },
     async insertRow (row) {
       let { row: newRow } = await this.$refs.xTable.insertAt(row)
