@@ -111,7 +111,7 @@
           title="发行日期"
           field="dateOfEstablishment"
           span="11"
-          :item-render="{name: '$input', props: {type: 'date', placeholder: '请选择日期',readonly:'true'}}"
+          :item-render="{name: '$input',props: {type: 'text',placeholder: '请选择日期',readonly:'true',disabled}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- // TODO: 增加productCode但不显示，用于传递给后端 -->
@@ -312,6 +312,9 @@ export default {
   },
   data () {
     return {
+      // 发行日期：当天
+      // publishDate: new Date().getTime(),
+
       submitLoading: false,
       tableBaseData: [],
       tableProductData: [],
@@ -462,6 +465,32 @@ export default {
         console.log('err:', err)
       })
     },
+    // 查看数据库中是否有重复
+    isExist () {
+      console.log('this.formData.productCode', this.formData.productCode)
+      console.log('this.formData.productName', this.formData.productName)
+      this.$http({
+        method: 'get',
+        url: `http://127.0.0.1:9090/financialProduct/isExist`,
+        params: {
+          productCode: this.formData.productCode,
+          productName: this.formData.productName
+        }
+      }).then((res) => {
+        // res:false => 重复
+        console.log('isExistres', res)
+        if (res.data) {
+          // 当基础信息可以成功新增时，则同时也新增收益信息
+          // 先新增带有 issuePrice 的详细信息，再新增主体信息以便更新收益信息
+          this.insertProductDetailInfo()
+          this.insertFinancialProduct()
+          this.$XModal.message({ message: '新增成功', status: 'success' })
+          this.showEdit = false
+        } else {
+          this.$XModal.message({ message: '数据库中已有该项目，请重试', status: 'fail' })
+        }
+      })
+    },
     // 新增数据
     insertFinancialProduct () {
       this.$http({
@@ -472,7 +501,7 @@ export default {
           'Content-Type': 'application/json'
         }
       }).then((res) => {
-        console.log('post:', res)
+        console.log('postInsert:', res)
       }).catch(function (err) {
         console.log('err:', err)
       })
@@ -494,6 +523,7 @@ export default {
         }
       }).then((res) => {
         this.tableBaseData = res.data.records
+        console.log('this.tableBaseData', this.tableBaseData)
         this.tablePage.totalResult = res.data.total
       }).catch(function (err) {
         console.log('err:', err)
@@ -546,7 +576,7 @@ export default {
         productName: '',
         riskType: '',
         publisher: '',
-        dateOfEstablishment: '',
+        dateOfEstablishment: this.timestampToTime(new Date().getTime()),
         productType: ''
       }
       // 基金详细信息
@@ -628,6 +658,8 @@ export default {
     },
     // 判空校验
     isNull () {
+      console.log('productCode', this.formData.productCode)
+      console.log('productName', this.formData.productName)
       if (this.formData.productType === null) {
         return false
       } else if (this.formData.productName === null || this.formData.productCode === null || this.formData.riskType === null || this.formData.publisher === null || this.formData.productName === null || this.formData.dateOfEstablishment === null) {
@@ -669,23 +701,26 @@ export default {
     },
     submitEvent () {
       const isNull = this.isNull()
+      const isWorkday = this.isWorkday()
       if (isNull) {
-        this.submitLoading = true
-        setTimeout(() => {
-          this.submitLoading = false
-          this.showEdit = false
-          if (this.selectRow) {
-            this.$XModal.message({ message: '保存成功', status: 'success' })
-            this.updateFinancialProduct()
-            this.getTableBaseData()
-          } else {
-            this.$XModal.message({ message: '新增成功', status: 'success' })
-            this.insertProductDetailInfo()
-            this.insertFinancialProduct()
-            // TODO: 在新增后有时候不会刷新当前页面
-            this.getTableBaseData()
-          }
-        }, 500)
+        if (isWorkday) {
+          // 工作日才能新增
+          this.submitLoading = true
+          setTimeout(() => {
+            this.submitLoading = false
+            if (this.selectRow) {
+              this.$XModal.message({ message: '保存成功', status: 'success' })
+              this.updateFinancialProduct()
+              this.getTableBaseData()
+            } else {
+              this.isExist()
+              // TODO: 在新增后有时候不会刷新当前页面
+              this.getTableBaseData()
+            }
+          }, 500)
+        } else {
+          this.$XModal.message({ message: '周末不能新增', status: 'fail' })
+        }
       } else {
         this.$XModal.message({ message: '信息不完整或格式有误', status: 'fail' })
       }
@@ -693,6 +728,15 @@ export default {
     async insertRow (row) {
       let { row: newRow } = await this.$refs.xTable.insertAt(row)
       await this.$refs.xTable.setActiveCell(newRow, 'sex')
+    },
+    // 工作日校验
+    isWorkday () {
+      var nowDate = new Date()
+      if (nowDate.getDay() === 0 || nowDate.getDay() === 6) {
+        return false
+      } else {
+        return true
+      }
     }
   }
 }
