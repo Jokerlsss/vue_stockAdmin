@@ -1,21 +1,22 @@
 <template>
   <div id="app">
-    <el-container>
-      <!-- 侧边栏 -->
+    <!-- <el-container>
+      侧边栏
       <el-aside width="200px">
         <vNavMenu></vNavMenu>
       </el-aside>
       <el-container>
-        <!-- 顶部 -->
+        顶部
         <el-header>
           <vBreadCrumb></vBreadCrumb>
         </el-header>
-        <!-- 内容 -->
+        内容
         <el-main>
           <router-view />
         </el-main>
       </el-container>
-    </el-container>
+    </el-container>-->
+    <router-view />
   </div>
 </template>
 

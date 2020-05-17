@@ -24,7 +24,7 @@
       <vxe-table-column field="publisher" title="发布公司" type="html"></vxe-table-column>
       <vxe-table-column field="dateOfEstablishment" title="发布日期" type="html"></vxe-table-column>
       <vxe-table-column field="productType" title="产品类型" show-overflow type="html"></vxe-table-column>
-      <vxe-table-column title="操作" width="100" show-overflow>
+      <!-- <vxe-table-column title="操作" width="100" show-overflow>
         <template v-slot="{ row }">
           <el-button type="text" icon="el-icon-edit" @click="editEvent(row)" style="color:#25c386"></el-button>
           <el-button
@@ -34,7 +34,7 @@
             style="color:#FF6600;"
           ></el-button>
         </template>
-      </vxe-table-column>
+      </vxe-table-column>-->
       <template v-slot:empty>
         <span style="color: #9898a0;">
           <p>没有更多数据了！</p>
@@ -78,40 +78,40 @@
           title="产品名称"
           field="productName"
           span="23"
-          :item-render="{name: '$input', props: {placeholder: '请输入名称'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,placeholder: '请输入名称'}}"
         ></vxe-form-item>
         <!-- // TODO: 产品代码设置为只能输入数字，包括表结构 -->
         <vxe-form-item
           title="产品代码"
           field="productCode"
           span="7"
-          :item-render="{name: '$input', props: {}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false}}"
         ></vxe-form-item>
         <!-- 股票、基金、定期、黄金 -->
         <vxe-form-item
           title="产品类型"
           field="productType"
           span="8"
-          :item-render="{name: '$select', props:{placeholder:'请选择产品类型'},options:[{value:'股票',label:'股票'},{value:'基金',label:'基金'},{value:'黄金',label:'黄金'}]}"
+          :item-render="{name: '$select', props:{disabled:selectRow?true:false,placeholder:'请选择产品类型'},options:[{value:'股票',label:'股票'},{value:'基金',label:'基金'},{value:'黄金',label:'黄金'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="风险类型"
           field="riskType"
           span="8"
-          :item-render="{name: '$select', props: {placeholder: '请选择风险类型'},options:[{value:'低风险',label:'低风险'},{value:'中低风险',label:'中低风险'},{value:'中风险',label:'中风险'},{value:'中高风险',label:'中高风险'}]}"
+          :item-render="{name: '$select', props: {disabled:selectRow?true:false,placeholder: '请选择风险类型'},options:[{value:'低风险',label:'低风险'},{value:'中低风险',label:'中低风险'},{value:'中风险',label:'中风险'},{value:'中高风险',label:'中高风险'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="发行公司"
           field="publisher"
           span="12"
-          :item-render="{name: '$input', props: {placeholder: '请输入发行公司名称'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,placeholder: '请输入发行公司名称'}}"
         ></vxe-form-item>
         <!-- // TODO:日期默认录入当天 -->
         <vxe-form-item
           title="发行日期"
           field="dateOfEstablishment"
           span="11"
-          :item-render="{name: '$input',props: {type: 'text',placeholder: '请选择日期',readonly:'true',disabled}}"
+          :item-render="{name: '$input',props: {disabled:selectRow?true:false,type: 'text',placeholder: '请选择日期',readonly:'true',disabled}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- // TODO: 增加productCode但不显示，用于传递给后端 -->
@@ -136,26 +136,26 @@
           title="基金类型"
           field="fundType"
           span="12"
-          :item-render="{name: '$select', props: {placeholder: '请选择基金类型'},options:[{value:'混合型',label:'混合型'},{value:'股票型',label:'股票型'},{value:'债券型',label:'债券型'},{value:'QDII',label:'QDII'}]}"
+          :item-render="{name: '$select', props: {disabled:selectRow?true:false,placeholder: '请选择基金类型'},options:[{value:'混合型',label:'混合型'},{value:'股票型',label:'股票型'},{value:'债券型',label:'债券型'},{value:'QDII',label:'QDII'}]}"
         ></vxe-form-item>
         <vxe-form-item
           title="基金经理"
           field="fundManager"
           span="11"
-          :item-render="{name: '$input', props: {placeholder: '请输入经理名称'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,placeholder: '请输入经理名称'}}"
         ></vxe-form-item>
         <!-- // TODO: 数字 + 单位 输入框 -->
         <vxe-form-item
           title="资产规模"
           field="assetSize"
           span="12"
-          :item-render="{name: '$input', props: {placeholder: '请输入规模，如：2亿'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,placeholder: '请输入规模，如：2亿'}}"
         ></vxe-form-item>
         <vxe-form-item
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 详细信息：股票 -->
@@ -178,7 +178,7 @@
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 详细信息：定期
@@ -231,7 +231,7 @@
           title="发行价格"
           field="issuePrice"
           span="11"
-          :item-render="{name: '$input', props: {type:'number',placeholder: '发行价格或净值'}}"
+          :item-render="{name: '$input', props: {disabled:selectRow?true:false,type:'number',placeholder: '发行价格或净值'}}"
         ></vxe-form-item>
       </vxe-form>
       <!-- 存放按钮的区域 -->
@@ -451,24 +451,22 @@ export default {
         console.log('err:', err)
       })
     },
-    updateFinancialProduct () {
-      this.$http({
-        method: 'post',
-        url: `http://127.0.0.1:9090/financialProduct/updateByWrapper`,
-        data: this.formData,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then((res) => {
-        console.log('post:', res)
-      }).catch(function (err) {
-        console.log('err:', err)
-      })
-    },
+    // updateFinancialProduct () {
+    //   this.$http({
+    //     method: 'post',
+    //     url: `http://127.0.0.1:9090/financialProduct/updateByWrapper`,
+    //     data: this.formData,
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     }
+    //   }).then((res) => {
+    //     console.log('post:', res)
+    //   }).catch(function (err) {
+    //     console.log('err:', err)
+    //   })
+    // },
     // 查看数据库中是否有重复
     isExist () {
-      console.log('this.formData.productCode', this.formData.productCode)
-      console.log('this.formData.productName', this.formData.productName)
       this.$http({
         method: 'get',
         url: `http://127.0.0.1:9090/financialProduct/isExist`,
@@ -525,6 +523,21 @@ export default {
         this.tableBaseData = res.data.records
         console.log('this.tableBaseData', this.tableBaseData)
         this.tablePage.totalResult = res.data.total
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
+    },
+    // 打开行数据时，展示详细数据，如：发行价格
+    // TODO 查看详细数据
+    getProductDetail (code) {
+      this.$http({
+        method: 'get',
+        url: `http://localhost:9090/financialProduct/getProductDetail`,
+        params: {
+          productCode: code
+        }
+      }).then((res) => {
+        console.log(res)
       }).catch(function (err) {
         console.log('err:', err)
       })
@@ -605,7 +618,7 @@ export default {
     },
     // TODO:在打开编辑时，带着 id 的参数访问后端，取得 tableProductData 数据
     editEvent (row) {
-      this.mockTableProductData()
+      this.getProductDetail(row.productCode)
       this.formData = {
         productCode: row.productCode,
         productName: row.productName,
@@ -626,11 +639,6 @@ export default {
       // 黄金详细信息
       this.goldData = {
         issuePrice: row.issuePrice
-      }
-      // 定期详细信息
-      this.regularData = {
-        depositDuration: row.depositDuration,
-        interestRate: row.interestRate
       }
       // 股票详细信息
       this.stockData = {
@@ -709,10 +717,11 @@ export default {
           setTimeout(() => {
             this.submitLoading = false
             if (this.selectRow) {
-              this.$XModal.message({ message: '保存成功', status: 'success' })
-              this.updateFinancialProduct()
-              this.getTableBaseData()
+              // this.$XModal.message({ message: '保存成功', status: 'success' })
+              // this.updateFinancialProduct()
+              // this.getTableBaseData()
             } else {
+              // isExist ：判断在数据库中是否存在，如果不存在则新增
               this.isExist()
               // TODO: 在新增后有时候不会刷新当前页面
               this.getTableBaseData()
@@ -743,6 +752,9 @@ export default {
 </script>
 
 <style scoped>
+.container {
+  margin: 20px;
+}
 .oprateArea {
   width: 100%;
   height: auto;
