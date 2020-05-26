@@ -237,8 +237,7 @@
       <!-- 存放按钮的区域 -->
       <vxe-form>
         <vxe-form-item align="center" span="24">
-          <el-button type="primary" @click="submitEvent">提交</el-button>
-          <el-button>取消</el-button>
+          <el-button type="primary" @click="submitEvent" v-if="selectRow?false:true">提交</el-button>
         </vxe-form-item>
       </vxe-form>
     </vxe-modal>
@@ -320,7 +319,7 @@ export default {
       tableProductData: [],
       tablePage: {
         currentPage: 1,
-        pageSize: 5,
+        pageSize: 10,
         totalResult: 0
       },
       // 基金详细信息数组
@@ -417,7 +416,6 @@ export default {
   // ? 如果使用了分页之后，搜索出来的结果是一页的还是多页的？
 
   mounted () {
-    // TODO: 数据接口挂载到此钩子函数下
     // this.mockTableBaseData()
     this.cutBreadTitle()
     this.getTableBaseData()
@@ -467,25 +465,31 @@ export default {
     // },
     // 查看数据库中是否有重复
     isExist () {
-      this.$http({
-        method: 'get',
-        url: `http://127.0.0.1:9090/financialProduct/isExist`,
-        params: {
-          productCode: this.formData.productCode,
-          productName: this.formData.productName
-        }
-      }).then((res) => {
-        // res:false => 重复
-        console.log('isExistres', res)
-        if (res.data) {
-          // 当基础信息可以成功新增时，则同时也新增收益信息
-          // 先新增带有 issuePrice 的详细信息，再新增主体信息以便更新收益信息
-          this.insertProductDetailInfo()
-          this.insertFinancialProduct()
-          this.$XModal.message({ message: '新增成功', status: 'success' })
-          this.showEdit = false
-        } else {
-          this.$XModal.message({ message: '数据库中已有该项目，请重试', status: 'fail' })
+      this.$XModal.confirm('提交后不能删改，确定提交？').then(type => {
+        if (type === 'confirm') {
+          // this.$XModal.message({ message: '确定提交', status: 'success' })
+          this.$http({
+            method: 'get',
+            url: `http://127.0.0.1:9090/financialProduct/isExist`,
+            params: {
+              productCode: this.formData.productCode,
+              productName: this.formData.productName
+            }
+          }).then((res) => {
+            // res:false => 重复
+            console.log('isExistres', res)
+            if (res.data) {
+              // 当基础信息可以成功新增时，则同时也新增收益信息
+              // 先新增带有 issuePrice 的详细信息，再新增主体信息以便更新收益信息
+              this.insertProductDetailInfo()
+              this.insertFinancialProduct()
+              // 成功提示框 => 刷新页面展示
+              this.$XModal.message({ message: '新增成功', status: 'success' }).then(this.getTableBaseData())
+              this.showEdit = false
+            } else {
+              this.$XModal.message({ message: '数据库中已有该项目，请重试', status: 'fail' })
+            }
+          })
         }
       })
     },
@@ -521,23 +525,7 @@ export default {
         }
       }).then((res) => {
         this.tableBaseData = res.data.records
-        console.log('this.tableBaseData', this.tableBaseData)
         this.tablePage.totalResult = res.data.total
-      }).catch(function (err) {
-        console.log('err:', err)
-      })
-    },
-    // 打开行数据时，展示详细数据，如：发行价格
-    // TODO 查看详细数据
-    getProductDetail (code) {
-      this.$http({
-        method: 'get',
-        url: `http://localhost:9090/financialProduct/getProductDetail`,
-        params: {
-          productCode: code
-        }
-      }).then((res) => {
-        console.log(res)
       }).catch(function (err) {
         console.log('err:', err)
       })
@@ -616,36 +604,62 @@ export default {
       this.selectRow = null
       this.showEdit = true
     },
+    // 打开行数据时，展示详细数据，如：发行价格
+    // TODO 查看详细数据
+    getProductDetail (code) {
+      this.$http({
+        method: 'get',
+        url: `http://localhost:9090/financialProduct/getProductDetail`,
+        params: {
+          productCode: code
+        }
+      }).then((res) => {
+        console.log('getProductDetail:', res)
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
+    },
     // TODO:在打开编辑时，带着 id 的参数访问后端，取得 tableProductData 数据
     editEvent (row) {
-      this.getProductDetail(row.productCode)
-      this.formData = {
-        productCode: row.productCode,
-        productName: row.productName,
-        riskType: row.riskType,
-        publisher: row.publisher,
-        dateOfEstablishment: row.dateOfEstablishment,
-        productType: row.productType
-      }
-      // 基金详细信息
-      // TODO： 详细信息绑定上表单中
-      this.fundData = {
-        productCode: row.productCode,
-        fundType: row.fundType,
-        fundManager: row.fundManager,
-        assetSize: row.assetSize,
-        issuePrice: row.issuePrice
-      }
-      // 黄金详细信息
-      this.goldData = {
-        issuePrice: row.issuePrice
-      }
-      // 股票详细信息
-      this.stockData = {
-        issuePrice: row.issuePrice
-      }
-      this.selectRow = row
-      this.showEdit = true
+      // this.getProductDetail(row.productCode)
+      this.$http({
+        method: 'get',
+        url: `http://localhost:9090/financialProduct/getProductDetail`,
+        params: {
+          productCode: row.productCode
+        }
+      }).then((res) => {
+        console.log('getProductDetail:', res)
+        /** 得到查询结果之后 => 打开模态窗口 => 将数值绑定进去 input */
+        this.formData = {
+          productCode: row.productCode,
+          productName: row.productName,
+          riskType: row.riskType,
+          publisher: row.publisher,
+          dateOfEstablishment: row.dateOfEstablishment,
+          productType: row.productType
+        }
+        if (row.productType === '股票') {
+          this.stockData = {
+            issuePrice: res.data.issuePrice
+          }
+        } else if (row.productType === '基金') {
+          this.fundData = {
+            fundType: res.data.fundType,
+            fundManager: res.data.fundManager,
+            assetSize: res.data.assetSize,
+            issuePrice: res.data.issuePrice
+          }
+        } else if (row.productType === '黄金') {
+          this.goldData = {
+            issuePrice: res.data.issuePrice
+          }
+        }
+        this.selectRow = row
+        this.showEdit = true
+      }).catch(function (err) {
+        console.log('err:', err)
+      })
     },
     removeEvent (row) {
       this.$XModal.confirm('您确定要删除该数据?').then(type => {
